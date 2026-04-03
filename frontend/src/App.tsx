@@ -8,15 +8,11 @@ import {
 } from "./User";
 import { login, logout, checkAuth } from "./Login";
 import type { User } from "./User";
-import "./App.css";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
-  const [showUsers, setShowUsers] = useState(false);
-  const [showForm, setShowForm] = useState(false);
-  const [showUpdateForm, setShowUpdateForm] = useState(false);
-  const [showDeleteForm, setShowDeleteForm] = useState(false);
+  const [userBarVisible, setUserBarVisible] = useState(false);
 
   useEffect(() => {
     checkAuth().then((loggedIn) => {
@@ -34,43 +30,95 @@ function App() {
 
   return (
     <div className="App">
-      <button
-        onClick={async () => {
-          const success = await logout();
-          if (success) {
-            setIsLoggedIn(false);
-          } else {
-            alert("Failed to log out.");
-          }
-        }}
-      >
-        Logout
-      </button>
-      <hr />
+      <div className="login-info">
+        <div className="login-header">
+          <button
+            onClick={async () => {
+              const success = await logout();
+              if (success) {
+                setIsLoggedIn(false);
+              } else {
+                alert("Failed to log out.");
+              }
+            }}
+          >
+            Logout
+          </button>
+        </div>
 
-      <p> Users</p>
-      <button onClick={() => setShowUsers(!showUsers)}>
-        {showUsers ? "Hide Users" : "Show Users"}
-      </button>
-      {showUsers && <GetUsers />}
+        <div className="login-menu">
+          <button onClick={() => setUserBarVisible(!userBarVisible)}>
+            {userBarVisible ? "Hide User Management" : "Show User Management"}
+          </button>
+        </div>
+      </div>
+      <hr /> {userBarVisible && <UsersBar />}
+    </div>
+  );
+}
+
+function UsersBar() {
+  const [activePanel, setActivePanel] = useState(null);
+
+  return (
+    <div className="users-bar">
+      <div className="users-crud-header">
+        <div className="users-bar-header">
+          <p>Users</p>
+          <button
+            onClick={() =>
+              setActivePanel(activePanel === "users" ? null : "users")
+            }
+          >
+            {activePanel === "users" ? "Hide Users" : "Show Users"}
+          </button>
+        </div>
+        <div className="users-bar-header">
+          <p> Create User</p>
+          <button
+            onClick={() =>
+              setActivePanel(activePanel === "create" ? null : "create")
+            }
+          >
+            {" "}
+            {activePanel === "create" ? "Hide Form" : "Show Create"}
+          </button>
+        </div>
+        <div className="users-bar-header">
+          <p> Update User</p>
+          <button
+            onClick={() =>
+              setActivePanel(activePanel === "update" ? null : "update")
+            }
+          >
+            {" "}
+            {activePanel === "update" ? "Hide Form" : "Show Update"}
+          </button>
+        </div>
+        <div className="users-bar-header">
+          <p> Delete User</p>
+          <button
+            onClick={() =>
+              setActivePanel(activePanel === "delete" ? null : "delete")
+            }
+          >
+            {activePanel === "delete" ? "Hide Form" : "Show Delete"}
+          </button>
+        </div>
+      </div>
+
       <hr />
-      <p> Create User</p>
-      <button onClick={() => setShowForm(!showForm)}>
-        {showForm ? "Hide Form" : "Show Form"}
-      </button>
-      {showForm && <CreateUser />}
-      <hr />
-      <p> Update User</p>
-      <button onClick={() => setShowUpdateForm(!showUpdateForm)}>
-        {showUpdateForm ? "Hide Form" : "Show Form"}
-      </button>
-      {showUpdateForm && <UpdateUser />}
-      <hr />
-      <p> Delete User</p>
-      <button onClick={() => setShowDeleteForm(!showDeleteForm)}>
-        {showDeleteForm ? "Hide Form" : "Show Form"}
-      </button>
-      {showDeleteForm && <DeleteUser />}
+      <div className="users-crud-content">
+        <div className="users-crud-content-users-list">
+          {activePanel === "users" && <GetUsers />}
+        </div>
+
+        <div className="users-crud-content-section">
+          {activePanel === "create" && <CreateUser />}
+          {activePanel === "update" && <UpdateUser />}
+          {activePanel === "delete" && <DeleteUser />}
+        </div>
+      </div>
     </div>
   );
 }
@@ -85,14 +133,14 @@ function GetUsers() {
   }, []);
 
   return (
-    <div>
-      <ul>
+    <div className="users-list">
+      <ol>
         {users.map((user) => (
           <li key={user.id}>
             {user.name} {user.lastName} ({user.email})
           </li>
         ))}
-      </ul>
+      </ol>
     </div>
   );
 }
@@ -169,7 +217,7 @@ function CreateUser() {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="crud-form">
       <input
         type="text"
         placeholder="Username"
@@ -177,7 +225,6 @@ function CreateUser() {
         onChange={(e) => setUsername(e.target.value)}
         required
       />{" "}
-      <br />
       <input
         type="password"
         placeholder="Password"
@@ -185,7 +232,6 @@ function CreateUser() {
         onChange={(e) => setPassword(e.target.value)}
         required
       />{" "}
-      <br />
       <input
         type="text"
         placeholder="Name"
@@ -193,7 +239,6 @@ function CreateUser() {
         onChange={(e) => setName(e.target.value)}
         required
       />{" "}
-      <br />
       <input
         type="text"
         placeholder="Last Name"
@@ -201,7 +246,6 @@ function CreateUser() {
         onChange={(e) => setLastName(e.target.value)}
         required
       />{" "}
-      <br />
       <input
         type="email"
         placeholder="Email"
@@ -209,7 +253,6 @@ function CreateUser() {
         onChange={(e) => setEmail(e.target.value)}
         required
       />{" "}
-      <br />
       <button type="submit">Create User</button>
     </form>
   );
@@ -272,7 +315,7 @@ function UpdateUser() {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="crud-form">
       <select value={selectedUserId} onChange={handleUserChange} required>
         <option value="">Select user</option>
         {users.map((user) => (
@@ -281,7 +324,6 @@ function UpdateUser() {
           </option>
         ))}
       </select>
-      <br />
 
       <input
         type="text"
@@ -290,7 +332,6 @@ function UpdateUser() {
         onChange={(e) => setUsername(e.target.value)}
         required
       />
-      <br />
 
       <input
         type="password"
@@ -298,7 +339,6 @@ function UpdateUser() {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
-      <br />
 
       <input
         type="text"
@@ -307,7 +347,6 @@ function UpdateUser() {
         onChange={(e) => setName(e.target.value)}
         required
       />
-      <br />
 
       <input
         type="text"
@@ -316,7 +355,6 @@ function UpdateUser() {
         onChange={(e) => setLastName(e.target.value)}
         required
       />
-      <br />
 
       <input
         type="email"
@@ -325,7 +363,6 @@ function UpdateUser() {
         onChange={(e) => setEmail(e.target.value)}
         required
       />
-      <br />
 
       <button type="submit">Update User</button>
     </form>
@@ -361,7 +398,7 @@ function DeleteUser() {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="crud-form">
       <select
         value={selectedUserId}
         onChange={(e) => setSelectedUserId(Number(e.target.value))}
@@ -374,7 +411,6 @@ function DeleteUser() {
           </option>
         ))}
       </select>
-      <br />
       <button type="submit">Delete User</button>
     </form>
   );
@@ -401,7 +437,7 @@ function LoginForm({ onLoginSuccess }: LoginFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="login-form">
       <h2>Login</h2>
 
       <input
@@ -411,7 +447,6 @@ function LoginForm({ onLoginSuccess }: LoginFormProps) {
         onChange={(e) => setUsername(e.target.value)}
         required
       />
-      <br />
 
       <input
         type="password"

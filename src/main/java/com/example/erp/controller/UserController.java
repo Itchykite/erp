@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true", allowedHeaders = "*")
 @RestController
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true", allowedHeaders = "*")
 @RequestMapping("/api/users")
 public class UserController {
     @Autowired
@@ -29,12 +29,14 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
+    @CrossOrigin
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
         Optional<User> user = userRepository.findById(id);
         return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
+    @CrossOrigin
     public ResponseEntity<?> createUser(@Valid @RequestBody User user) {
         try {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -49,6 +51,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
+    @CrossOrigin
     public ResponseEntity<User> updateUser(@PathVariable Long id, @Valid @RequestBody User userDetails) {
         Optional<User> optionalUser = userRepository.findById(id);
         if (optionalUser.isPresent()) {
@@ -65,6 +68,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
+    @CrossOrigin
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         if (userRepository.existsById(id)) {
             userRepository.deleteById(id);

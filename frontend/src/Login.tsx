@@ -1,4 +1,7 @@
-async function login(username: string, password: string): Promise<boolean> {
+export async function login(
+  username: string,
+  password: string,
+): Promise<boolean> {
   const formData = new URLSearchParams();
   formData.append("username", username);
   formData.append("password", password);
@@ -15,7 +18,7 @@ async function login(username: string, password: string): Promise<boolean> {
   return response.ok;
 }
 
-async function logout(): Promise<boolean> {
+export async function logout(): Promise<boolean> {
   const response = await fetch("http://localhost:8080/logout", {
     method: "POST",
     credentials: "include",
@@ -24,7 +27,7 @@ async function logout(): Promise<boolean> {
   return response.ok;
 }
 
-async function checkAuth(): Promise<boolean> {
+export async function checkAuth(): Promise<boolean> {
   const response = await fetch("http://localhost:8080/api/users", {
     method: "GET",
     credentials: "include",
@@ -32,5 +35,3 @@ async function checkAuth(): Promise<boolean> {
 
   return response.ok;
 }
-
-export { login, logout, checkAuth };

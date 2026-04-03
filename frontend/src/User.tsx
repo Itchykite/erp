@@ -1,4 +1,4 @@
-type User = {
+export type User = {
   id: number;
   username: string;
   name: string;
@@ -6,7 +6,7 @@ type User = {
   email: string;
 };
 
-type CreateUserRequest = {
+export type CreateUserRequest = {
   username: string;
   password: string;
   name: string;
@@ -14,7 +14,7 @@ type CreateUserRequest = {
   email: string;
 };
 
-async function dbGetUsers(): Promise<User[]> {
+export async function dbGetUsers(): Promise<User[]> {
   try {
     const response = await fetch("http://localhost:8080/api/users", {
       credentials: "include",
@@ -32,7 +32,7 @@ async function dbGetUsers(): Promise<User[]> {
   }
 }
 
-async function dbGetUserById(userId: number): Promise<User | null> {
+export async function dbGetUserById(userId: number): Promise<User | null> {
   try {
     const response = await fetch(`http://localhost:8080/api/users/${userId}`, {
       credentials: "include",
@@ -50,7 +50,9 @@ async function dbGetUserById(userId: number): Promise<User | null> {
   }
 }
 
-async function dbCreateUser(user: CreateUserRequest): Promise<User | null> {
+export async function dbCreateUser(
+  user: CreateUserRequest,
+): Promise<User | null> {
   try {
     const response = await fetch("http://localhost:8080/api/users", {
       method: "POST",
@@ -73,7 +75,7 @@ async function dbCreateUser(user: CreateUserRequest): Promise<User | null> {
   }
 }
 
-async function dbUpdateUser(
+export async function dbUpdateUser(
   userId: number,
   user: CreateUserRequest,
 ): Promise<User | null> {
@@ -99,7 +101,7 @@ async function dbUpdateUser(
   }
 }
 
-async function dbDeleteUser(userId: number): Promise<boolean> {
+export async function dbDeleteUser(userId: number): Promise<boolean> {
   try {
     const response = await fetch(`http://localhost:8080/api/users/${userId}`, {
       method: "DELETE",
@@ -116,6 +118,3 @@ async function dbDeleteUser(userId: number): Promise<boolean> {
     return false;
   }
 }
-
-export { dbGetUsers, dbGetUserById, dbCreateUser, dbUpdateUser, dbDeleteUser };
-export type { User, CreateUserRequest };
