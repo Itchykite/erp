@@ -164,3 +164,16 @@
   justify-content: center;
   margin-right: 12px;
 }
+
+.modules-checkbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 10px 0;
+}
+
+.modules-checkbox-list label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

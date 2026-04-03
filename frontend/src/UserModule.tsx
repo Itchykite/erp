@@ -5,9 +5,11 @@ import {
   dbCreateUser,
   dbUpdateUser,
   dbDeleteUser,
+  dbGetModules,
+  dbAssignModulesToUser,
 } from "./User";
 import "./UserModule.css";
-import type { User } from "./User";
+import type { User, Module } from "./User";
 
 export function UsersBar() {
   const [activePanel, setActivePanel] = useState(null);
@@ -89,7 +91,10 @@ export function GetUsers() {
       <ol>
         {users.map((user) => (
           <li key={user.id}>
-            {user.name} {user.lastName} ({user.email})
+            {user.name} {user.lastName} ({user.email}) - Modules:{" "}
+            {user.modules?.length
+              ? user.modules.map((module) => module.moduleName).join(", ")
+              : "No modules assigned"}
           </li>
         ))}
       </ol>
@@ -148,9 +153,26 @@ export function CreateUser() {
   const [name, setName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [modules, setModules] = useState<Module[]>([]);
+  const [selectedModuleIds, setSelectedModuleIds] = useState<number[]>([]);
+
+  useEffect(() => {
+    dbGetModules().then((data) => {
+      setModules(data);
+    });
+  }, []);
+
+  const handleModuleChange = (moduleId: number) => {
+    setSelectedModuleIds((prev) =>
+      prev.includes(moduleId)
+        ? prev.filter((id) => id !== moduleId)
+        : [...prev, moduleId],
+    );
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     const newUser = {
       username,
       password,
@@ -158,13 +180,15 @@ export function CreateUser() {
       lastName,
       email,
     };
+
     const createdUser = await dbCreateUser(newUser);
+
     if (createdUser) {
+      await dbAssignModulesToUser(createdUser.id, selectedModuleIds);
       alert(`User ${createdUser.name} created successfully!`);
       window.location.reload();
     } else {
       alert("Failed to create user.");
-      window.location.reload();
     }
   };
 
@@ -176,35 +200,50 @@ export function CreateUser() {
         value={username}
         onChange={(e) => setUsername(e.target.value)}
         required
-      />{" "}
+      />
       <input
         type="password"
         placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
-      />{" "}
+      />
       <input
         type="text"
         placeholder="Name"
         value={name}
         onChange={(e) => setName(e.target.value)}
         required
-      />{" "}
+      />
       <input
         type="text"
         placeholder="Last Name"
         value={lastName}
         onChange={(e) => setLastName(e.target.value)}
         required
-      />{" "}
+      />
       <input
         type="email"
         placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
-      />{" "}
+      />
+
+      <div className="modules-checkbox-list">
+        <p>Select modules:</p>
+        {modules.map((module) => (
+          <label key={module.id}>
+            <input
+              type="checkbox"
+              checked={selectedModuleIds.includes(module.id)}
+              onChange={() => handleModuleChange(module.id)}
+            />
+            {module.moduleName}
+          </label>
+        ))}
+      </div>
+
       <button type="submit">Create User</button>
     </form>
   );
@@ -212,6 +251,7 @@ export function CreateUser() {
 
 export function UpdateUser() {
   const [users, setUsers] = useState<User[]>([]);
+  const [modules, setModules] = useState<Module[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<number | "">("");
 
   const [username, setUsername] = useState("");
@@ -219,10 +259,15 @@ export function UpdateUser() {
   const [name, setName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [selectedModuleIds, setSelectedModuleIds] = useState<number[]>([]);
 
   useEffect(() => {
     dbGetUsers().then((data) => {
       setUsers(data);
+    });
+
+    dbGetModules().then((data) => {
+      setModules(data);
     });
   }, []);
 
@@ -237,7 +282,16 @@ export function UpdateUser() {
       setLastName(user.lastName);
       setEmail(user.email);
       setPassword("");
+      setSelectedModuleIds(user.modules?.map((module) => module.id) ?? []);
     }
+  };
+
+  const handleModuleChange = (moduleId: number) => {
+    setSelectedModuleIds((prev) =>
+      prev.includes(moduleId)
+        ? prev.filter((id) => id !== moduleId)
+        : [...prev, moduleId],
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -259,6 +313,7 @@ export function UpdateUser() {
     const result = await dbUpdateUser(Number(selectedUserId), updatedUser);
 
     if (result) {
+      await dbAssignModulesToUser(Number(selectedUserId), selectedModuleIds);
       alert(`User ${result.name} updated successfully!`);
       window.location.reload();
     } else {
@@ -315,6 +370,20 @@ export function UpdateUser() {
         onChange={(e) => setEmail(e.target.value)}
         required
       />
+
+      <div className="modules-checkbox-list">
+        <p>Select modules:</p>
+        {modules.map((module) => (
+          <label key={module.id}>
+            <input
+              type="checkbox"
+              checked={selectedModuleIds.includes(module.id)}
+              onChange={() => handleModuleChange(module.id)}
+            />
+            {module.moduleName}
+          </label>
+        ))}
+      </div>
 
       <button type="submit">Update User</button>
     </form>

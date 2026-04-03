@@ -1,7 +1,9 @@
 package com.example.erp.controller;
 
 import com.example.erp.model.User;
+import com.example.erp.repository.ModuleRepository;
 import com.example.erp.repository.UserRepository;
+import com.example.erp.dto.UserDTO;
 
 import jakarta.validation.Valid;
 
@@ -12,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.HashSet;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true", allowedHeaders = "*")
@@ -22,6 +26,9 @@ public class UserController {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private ModuleRepository moduleRepository;
 
     @GetMapping
     public List<User> getAllUsers() {
@@ -65,6 +72,26 @@ public class UserController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @PutMapping("/{id}/modules")
+    public ResponseEntity<User> assignModulesToUser(
+            @PathVariable Long id,
+            @RequestBody UserDTO request) {
+
+        Optional<User> optionalUser = userRepository.findById(id);
+        if (optionalUser.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        User user = optionalUser.get();
+        Set<Long> moduleIds = request.getModuleIds();
+        Set<com.example.erp.model.Module> modules = new HashSet<>(moduleRepository.findAllById(moduleIds));
+
+        user.setModules(modules);
+        User savedUser = userRepository.save(user);
+
+        return ResponseEntity.ok(savedUser);
     }
 
     @DeleteMapping("/{id}")
