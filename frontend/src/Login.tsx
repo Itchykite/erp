@@ -28,10 +28,19 @@ export async function logout(): Promise<boolean> {
 }
 
 export async function checkAuth(): Promise<boolean> {
-  const response = await fetch("http://localhost:8080/api/users", {
-    method: "GET",
-    credentials: "include",
-  });
+  try {
+    const response = await fetch("http://localhost:8080/api/users", {
+      method: "GET",
+      credentials: "include",
+    });
 
-  return response.ok;
+    if (response.status === 200) return true;
+    if (response.status === 401) return false;
+
+    console.warn("Unexpected status:", response.status);
+    return false;
+  } catch (error) {
+    console.error("Auth check failed:", error);
+    return false;
+  }
 }
