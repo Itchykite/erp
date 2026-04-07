@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { UsersBar } from "./UserModule";
 import { Login, isLoggedIn } from "./LoginModule";
+import { ModuleBar } from "./ModuleModule";
 
 function App() {
-  const [userBarVisible, setUserBarVisible] = useState(false);
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
+
+  const [activePanel, setActivePanel] = useState(null);
 
   const checkLoginStatus = () => {
     isLoggedIn().then((loggedIn) => {
@@ -28,15 +30,37 @@ function App() {
             onLoginSuccess={checkLoginStatus}
             onLogoutSuccess={() => {
               setLoggedIn(false);
-              setUserBarVisible(false);
             }}
           />
         </div>
 
         {loggedIn && (
           <div className="login-menu">
-            <button onClick={() => setUserBarVisible(!userBarVisible)}>
-              {userBarVisible ? "Hide User Management" : "Show User Management"}
+            <button
+              onClick={() =>
+                setActivePanel(
+                  activePanel === "user_module" ? null : "user_module",
+                )
+              }
+            >
+              {activePanel === "user_module"
+                ? "Hide User Panel"
+                : "Show User Panel"}
+            </button>
+          </div>
+        )}
+        {loggedIn && (
+          <div className="login-menu">
+            <button
+              onClick={() =>
+                setActivePanel(
+                  activePanel === "module_module" ? null : "module_module",
+                )
+              }
+            >
+              {activePanel === "module_module"
+                ? "Hide Module Panel"
+                : "Show Module Panel"}
             </button>
           </div>
         )}
@@ -44,7 +68,8 @@ function App() {
 
       <hr />
       <div className="content">
-        {loggedIn && userBarVisible && <UsersBar />}
+        {loggedIn && activePanel === "user_module" && <UsersBar />}
+        {loggedIn && activePanel === "module_module" && <ModuleBar />}
       </div>
     </div>
   );
