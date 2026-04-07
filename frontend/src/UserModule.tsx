@@ -304,10 +304,10 @@ export function UpdateUser() {
 
     const updatedUser = {
       username,
-      password,
       name,
       lastName,
       email,
+      ...(password.trim() ? { password } : {}),
     };
 
     const result = await dbUpdateUser(Number(selectedUserId), updatedUser);

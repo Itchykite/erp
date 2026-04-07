@@ -2,21 +2,44 @@ import { useEffect, useState } from "react";
 import { UsersBar } from "./UserModule";
 import { Login, isLoggedIn } from "./LoginModule";
 import { ModuleBar } from "./ModuleModule";
+import { getCurrentUser } from "./Login";
+import type { User } from "./User";
 
 function App() {
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
-
-  const [activePanel, setActivePanel] = useState(null);
-
-  const checkLoginStatus = () => {
-    isLoggedIn().then((loggedIn) => {
-      setLoggedIn(loggedIn);
-    });
-  };
+  const [activePanel, setActivePanel] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   useEffect(() => {
-    checkLoginStatus();
+    const init = async () => {
+      const auth = await isLoggedIn();
+      setLoggedIn(auth);
+
+      if (auth) {
+        const user = await getCurrentUser();
+        setCurrentUser(user);
+      } else {
+        setCurrentUser(null);
+      }
+    };
+
+    init();
   }, []);
+
+  const checkLoginStatus = async () => {
+    const auth = await isLoggedIn();
+    setLoggedIn(auth);
+
+    if (auth) {
+      const user = await getCurrentUser();
+      setCurrentUser(user);
+    } else {
+      setCurrentUser(null);
+    }
+  };
+
+  const hasModuleAccess = (moduleName: string) =>
+    currentUser?.modules?.some((m) => m.moduleName === moduleName) ?? false;
 
   if (loggedIn === null) {
     return <div>Loading...</div>;
@@ -30,11 +53,13 @@ function App() {
             onLoginSuccess={checkLoginStatus}
             onLogoutSuccess={() => {
               setLoggedIn(false);
+              setCurrentUser(null);
+              setActivePanel(null);
             }}
           />
         </div>
 
-        {loggedIn && (
+        {loggedIn && hasModuleAccess("user_module") && (
           <div className="login-menu">
             <button
               onClick={() =>
@@ -49,7 +74,8 @@ function App() {
             </button>
           </div>
         )}
-        {loggedIn && (
+
+        {loggedIn && hasModuleAccess("module_module") && (
           <div className="login-menu">
             <button
               onClick={() =>

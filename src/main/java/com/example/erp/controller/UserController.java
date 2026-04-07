@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 import java.util.List;
 import java.util.Optional;
@@ -33,6 +34,17 @@ public class UserController {
     @GetMapping
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<User> getCurrentUser(Authentication authentication) {
+        if (authentication == null || authentication.getName() == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        Optional<User> user = userRepository.findByUsername(authentication.getName());
+        return user.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @GetMapping("/{id}")
@@ -59,15 +71,20 @@ public class UserController {
 
     @PutMapping("/{id}")
     @CrossOrigin
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @Valid @RequestBody User userDetails) {
+    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User userDetails) {
         Optional<User> optionalUser = userRepository.findById(id);
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
+
             user.setUsername(userDetails.getUsername());
-            user.setPassword(passwordEncoder.encode(userDetails.getPassword()));
             user.setName(userDetails.getName());
             user.setLastName(userDetails.getLastName());
             user.setEmail(userDetails.getEmail());
+
+            if (userDetails.getPassword() != null && !userDetails.getPassword().trim().isEmpty()) {
+                user.setPassword(passwordEncoder.encode(userDetails.getPassword()));
+            }
+
             return ResponseEntity.ok(userRepository.save(user));
         } else {
             return ResponseEntity.notFound().build();

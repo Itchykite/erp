@@ -22,7 +22,7 @@ export type CreateUserRequest = {
 
 export type UpdateUserRequest = {
   username: string;
-  password: string;
+  password?: string;
   name: string;
   lastName: string;
   email: string;

@@ -1,3 +1,5 @@
+import type { User } from "./User";
+
 export async function login(
   username: string,
   password: string,
@@ -42,5 +44,24 @@ export async function checkAuth(): Promise<boolean> {
   } catch (error) {
     console.error("Auth check failed:", error);
     return false;
+  }
+}
+
+export async function getCurrentUser(): Promise<User | null> {
+  try {
+    const response = await fetch("http://localhost:8080/api/users/me", {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (response.status === 200) {
+      const user: User = await response.json();
+      return user;
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Failed to get current user:", error);
+    return null;
   }
 }

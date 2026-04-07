@@ -104,8 +104,11 @@ export function CreateModule() {
     const newModule = await dbCreateModule({ moduleName: moduleName });
 
     if (newModule) {
-      setModules([...modules, newModule]);
+      alert(`Module "${newModule.moduleName}" created successfully`);
       setModuleName("");
+      setModules([...modules, newModule]);
+    } else {
+      alert("Failed to create module");
     }
   };
 
